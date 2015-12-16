@@ -1,0 +1,29 @@
+---
+title: "ControlStructures"
+author: "tedscott"
+date: "December 15, 2015"
+output: html_document
+---
+
+Week 2 - Control Structures
+
+```{r}
+# create a matrix
+x <- matrix(1:6, nrow=2, ncol=3)
+
+#loop thru it and print out contents
+for(i in seq_len(nrow(x))) {
+  for(j in seq_len(ncol(x))) {
+    print(x[i,j])
+  }
+}
+
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

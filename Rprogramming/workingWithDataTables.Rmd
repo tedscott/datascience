@@ -1,0 +1,85 @@
+---
+title: "DataTables"
+author: "tedscott"
+date: "December 13, 2015"
+output: html_document
+---
+
+Notes about Data Tables
+
+```{r}
+library(data.table)
+
+#compare DF and data table
+DF <- data.frame(x=rnorm(9), y=rep(c("a","b","c"),each=3),z=rnorm(9))
+head(DF,3)
+
+DT = data.table(x=rnorm(9), y=rep(c("a","b","c"),each=3),z=rnorm(9))
+head(DT,3))
+
+# view all tables in memory
+tables()
+
+# subsetting is very similar
+DT[2,]
+
+DT[DT$y=="a",]
+
+# subsetting rows a bit different
+# get 2nd and 3rd rows
+DT[,c(2,3)]
+
+# subsetting columns is quite different
+# this doesn't work like a DF
+# try to get 2nd and 3rd column
+DT[,c(2,3)]
+
+# it turns out that any argument you pass after a comma in an expression
+# that you want to apply to the DT
+# for example this will spit out the mean of the x values and the sum of the # z values
+# we passed in a list of the functions we want to apply
+DT[,list(mean(x),sum(z))]
+
+# add a new column w that has the z^2 values in it
+DT[,w:=z^2]
+
+#table of the y values
+DT[,table(y)]
+
+# note that DT2 <- DT doesn't make a copy so operations on DT will affect DT2
+
+#multiple operations
+DT[,m:= {tmp <- (x+z); log2(tmp+5)}]
+
+# plyr like
+DT[,a:=x>0]
+DT[,b:=mean(x+w),by=a]
+
+# special variables
+set.seed(123)
+DT <- data.table(x=sample(letters[1:3],1E5,TRUE))
+
+# .N does a count, in this case, grouped by the letters in x
+DT[, .N, by=x]
+
+# keys can speed things up
+DT <- data.table(x=rep(c("a","b","c"),each=100, y=rnorm(100)))
+setkey(DT, x)
+DT['a']
+
+# can use keys for joins
+DT1 <- data.table(x=c('a','a','b','dt1'),y=1:4)
+DT2 <- data.table(x=c('a','b','dt2'),z=5:7)
+setkey(DT1,x); setkey(DT2,x)
+merge(DT1,DT2)
+
+
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
