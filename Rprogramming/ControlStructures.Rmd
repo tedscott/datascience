@@ -11,11 +11,38 @@ Week 2 - Control Structures
 # create a matrix
 x <- matrix(1:6, nrow=2, ncol=3)
 
-#loop thru it and print out contents
+# forloop thru it and print out contents
 for(i in seq_len(nrow(x))) {
   for(j in seq_len(ncol(x))) {
     print(x[i,j])
   }
+}
+
+
+# while loop
+z <- 5
+set.seed(1215)
+while(z>=3 && z<=10) {
+  print(z)
+  coin <- rbinom(1, 1, 0.5)
+  if(coin == 1) { # random walk
+    z <- z+1
+  } else {
+    z <- z - 1
+  }
+}
+
+# repeat (don't use me)
+
+# next
+x <- 1
+for(i in 1:100) {
+  # next means go back to the for loop without executing anything, just increment i
+  if(i<=20) next
+  
+  # print 21 and then exit loop via break
+  print(i)
+  break
 }
 
 ```

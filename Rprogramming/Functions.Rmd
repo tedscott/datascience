@@ -1,0 +1,83 @@
+---
+title: "Functions"
+author: "tedscott"
+date: "December 15, 2015"
+output: html_document
+---
+
+R functions
+
+```{r}
+# function that adds two inputs together
+add2 <- function(x, y) {
+  x+y
+}
+
+# use it
+add2(2,3)
+
+# subset of a vector where values are > 10
+above10 <- function(x) {
+  # create logical vector of TRUE/FALSE
+  use <- x > 10
+  # output those that are TRUE
+  x[use]
+}
+
+# use it
+above10(1:20)
+
+# above n, where default value for n is 10
+above <- function(x, n=10) {
+  use <- x > n
+  x[use]
+}
+
+y <- 1:20
+above(y,15)
+above(y)
+
+```
+
+More complex functions
+
+```{r}
+# function that spits out the column means for a DF or matrix
+# default is to remove NAs
+columnMeans <- function(y, removeNA=TRUE) {
+  # get numbe of columns
+  numcols <- ncol(y)
+  
+  # create empty numeric vector to hold the means
+  means <- numeric(numcols)
+  
+  # loop thru to calc them
+  for(i in 1:numcols) {
+    means[i] <- mean(y[, i], na.rm = removeNA)
+  }
+  
+  # return value is last line
+  means
+}
+
+# test it
+x <- matrix(1:8,2,4)
+columnMeans(x)
+columnMeans(airquality)
+columnMeans(airquality, FALSE)
+
+
+
+
+
+```
+
+
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
