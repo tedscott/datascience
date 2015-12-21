@@ -1,0 +1,71 @@
+---
+title: "Reading from the Web"
+author: "tedscott"
+date: "December 19, 2015"
+output: html_document
+---
+
+Web scraping 101
+                           
+
+```{r}
+# read in Jeff Leek's Google scholar page
+con <- url("http://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en")
+
+htmlCode <- readLines(con)
+close(con)
+htmlCode
+
+# that dumps out rather poorly on one line
+# so use XML package
+library(XML)
+url <- "http://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en"
+html <- htmlTreeParse(url, useInternalNodes = TRUE)
+
+# output title of page
+xpathSApply(html, "//title", xmlValue)
+
+# cited by column?
+xpathSApply(html, "//td[@id='col-citedby']", xmlValue)
+
+
+# use the httr package
+install.packages("httr")
+library(httr)
+html2 <- GET(url)
+
+# extract as text
+content2 <- content(html2,as="text")
+parsedHtml <- htmlParse(content2,asText=TRUE)
+
+# dump out title
+xpathSApply(parsedHtml, "//title", xmlValue)
+
+
+# get a 401 response if you don't have access (site requires passwd, e.g.)
+pg1 <- GET("http://httpbin.org/basic-auth/user/passwd")
+pg1
+
+# but with httr package we can authenticate
+pg2 <- GET("http://httpbin.org/basic-auth/user/passwd", authenticate("user","passwd"))
+pg2
+
+names(pg2)
+
+# if you use handles, then you won't have to reauth each time
+google <- handle("http://www.google.com")
+pg3 <- GET(handle=google, path="/")
+pg4 <- GET(handle=google, path="search")
+
+```
+
+See more about web scraping at r-bloggers: http://www.r-bloggers.com/?s=Web+Scraping
+
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

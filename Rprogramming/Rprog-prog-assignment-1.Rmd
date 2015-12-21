@@ -1,0 +1,150 @@
+---
+title: "RProgramming Prog Assignment 1"
+author: "tedscott"
+date: "December 20, 2015"
+output: html_document
+---
+
+Problem 1
+
+This site is helpful: https://github.com/rdpeng/practice_assignment/blob/master/practice_assignment.rmd
+
+```{r}
+list.files("./specdata")
+# take a look at 001
+first <- read.csv("./specdata/001.csv")
+
+# get all the file names in a list so we can pull from the list by index later
+allFiles <- list.files("./specdata/", full.names = TRUE)
+second <- read.csv(allFiles[2])
+head(second)
+
+# ok now write the function to answer question 1
+# I have to save it in pollutantmean.R for submission
+
+pollutantmean <- function(directory, pollutant, id = 1:332) {
+  ## 'directory' is a character vector of length 1 indicating
+  ## the location of the CSV files
+
+  ## 'pollutant' is a character vector of length 1 indicating
+  ## the name of the pollutant for which we will calculate the
+  ## mean; either "sulfate" or "nitrate".
+
+  ## 'id' is an integer vector indicating the monitor ID numbers
+  ## to be used
+
+  ## Return the mean of the pollutant across all monitors list
+  ## in the 'id' vector (ignoring NA values)
+  ## NOTE: Do not round the result!
+  
+  # get all the files in the directory
+  allFiles <- list.files(directory, full.names = TRUE)
+  
+  # create empty data frame
+  df <- data.frame()
+  
+  # loop thru all the ids and build a df with rbind
+  for(i in id) {
+    df <- rbind(df, read.csv(allFiles[i]))
+  }
+  
+  if(pollutant == "sulfate") {
+    mean(df$sulfate, na.rm=TRUE)
+  } 
+  else if(pollutant == "nitrate") {
+    mean(df$nitrate, na.rm=TRUE)    
+  } 
+  else {
+    print("unknown pollutant");print(pollutant);
+  }
+
+}
+```
+
+Problem 2
+
+```{r}
+complete <- function(directory, id = 1:332) {
+  ## 'directory' is a character vector of length 1 indicating
+  ## the location of the CSV files
+
+  ## 'id' is an integer vector indicating the monitor ID numbers
+  ## to be used
+  
+  ## Return a data frame of the form:
+  ## id nobs
+  ## 1  117
+  ## 2  1041
+  ## ...
+  ## where 'id' is the monitor ID number and 'nobs' is the
+  ## number of complete cases
+  
+  # get all the files in the directory
+  allFiles <- list.files(directory, full.names = TRUE)
+  
+  # create empty data frame
+  df <- data.frame()
+  
+  # read in the files
+  # and store in the DF the number of complete cases
+  for(i in id) {
+    df <- rbind(df, sum(complete.cases(read.csv(allFiles[i]))))
+  }
+  
+  df <- cbind(id, df)
+  names(df) <- c("id","nobs")
+  df
+  
+}
+```
+
+Part 3
+
+```{r}
+corr <- function(directory, threshold = 0) {
+  ## 'directory' is a character vector of length 1 indicating
+  ## the location of the CSV files
+
+  ## 'threshold' is a numeric vector of length 1 indicating the
+  ## number of completely observed observations (on all
+  ## variables) required to compute the correlation between
+  ## nitrate and sulfate; the default is 0
+
+  ## Return a numeric vector of correlations
+  ## NOTE: Do not round the result!
+  
+  # use complete function to get a df of id and complete cases
+  df <- complete(directory)
+  
+  #subset it to those rows where nobs meets or exceeds threshold
+  df_subset <- df[which(df[ ,"nobs"] >= threshold), ]
+  
+  # get all the files in the directory
+  allFiles <- list.files(directory, full.names = TRUE)
+  
+  # now compute correlations between sulfate and nitrate
+  # in those files that had completed cases that met the threshold
+  
+  # create empty numeric vector
+  vect <- vector(mode="numeric")#, length=nrow(df_subset))
+  j <- 1 # counter
+  
+  # read in each file in the subset by id
+  # and fill a vector with the correlations
+  for(i in df_subset$id) {
+    dfTmp <- read.csv(allFiles[i])
+    tmp <- cor(dfTmp$nitrate,dfTmp$sulfate, use="pairwise.complete.obs")
+    if(!is.na(tmp)) {
+      vect[j] <- tmp
+      j <- j+1
+    }
+  }
+  
+  # return value is the vector of correlations
+  vect
+  
+}
+
+
+```
+
