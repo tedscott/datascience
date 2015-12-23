@@ -1,0 +1,68 @@
+---
+title: "Rprog Loop Functions"
+author: "tedscott"
+date: "December 22, 2015"
+output: html_document
+---
+
+Week 3 - Loop Functions (lapply sapply apply tapply mapply)
+
+```{r}
+# lapply - what goes in might not be a list, but it will be coerced into a list
+# with as.list (giving an error if it fails)
+# it always returns a list
+(x <- list(a=1:5, b=rnorm(10)))
+lapply(x, mean)
+
+# generate four random uniform distributions
+# first is length 1, last is length 4
+# last two args are passed to runif as the min and max values
+x <- 1:4
+lapply(x, runif, min = 0, max = 10)
+
+# can make use of anonymous or lambda functions
+# to extract the first column of each of the matricies in
+# a list of matricies
+x <- list(a=matrix(1:4, 2, 2), b=matrix(1:6, 3, 2))
+lapply(x, function(elt) elt[, 1])
+
+
+# sapply tries to simply the result into a vector if possible
+# or a matrix if the result is a list of vectors of the same length
+# unless it can't, and then you get a list like lapply
+(x <- list(a=1:5, b=rnorm(10), c=rnorm(20,1)))
+sapply(x, mean)
+
+# apply is used to evaluate a function of the margins of an array
+# e.g. to do something over the rows or columns of a matrix
+# not faster than a for loop, but is only one line
+
+# 20 rows, 10 columns
+x <- matrix(rnorm(200),20,10) 
+
+# apply the mean to all the columns (dimension 2), get 10 results as a vector
+apply(x, 2, mean) 
+
+# apply the mean to all of the rows (dimension 1), get 20 results as a vector
+apply(x, 1, mean)
+
+# there are shortcut functions for the above and sums that are optimized
+rowSums(x) # same as apply(x, 1, sum)
+rowMeans(x) # same as apply(x, 1, mean)
+colSums(x) # same as apply(x, 2, sum)
+colMeans(x) # same as apply(x, 2, mean)
+
+# 25% and 75% quantiles of the rows of a matrix
+apply(x, 1, quantile, probs=c(0.25, 0.75))
+
+
+
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
