@@ -5,7 +5,7 @@ date: "December 22, 2015"
 output: html_document
 ---
 
-Week 3 - Loop Functions (lapply sapply apply tapply mapply)
+Week 3 - Loop Functions (lapply sapply apply tapply mapply split)
 
 ```{r}
 # lapply - what goes in might not be a list, but it will be coerced into a list
@@ -78,6 +78,55 @@ f
 
 tapply(x, f, mean)
 
+
+# split()
+# split takes a vector or other object and splits into groups based on a factor variable or list of factors
+str(split)
+
+# vector with three groups in it
+x <- c(rnorm(10), runif(10), rnorm(10,1))
+       
+# create three groups of factors with gl() function
+f <- gl(3,10)
+
+# split x by factor f - get a list back with the original vector
+# split into 3 groups
+split(x, f)
+
+# split followed by lapply - get means of the three groups from above
+lapply(split(x,f), mean)
+
+# use split to calculate mean in each month of airquality dataset
+library(datasets)
+head(airquality)
+
+# split by month
+# month is not factor by is coerced by split
+s <- split(airquality, airquality$Month) 
+
+# generate means of each of these three columns using lapply
+lapply(s, function(x) colMeans(x[, c("Ozone", "Solar.R", "Temp")]))
+
+# nicer output using sapply, fix NAs
+sapply(s, function(x) colMeans(x[, c("Ozone", "Solar.R", "Temp")], na.rm=TRUE))
+
+
+# splitting on more than one level!
+# e.g. have gender (1 or 2) and race in a data set
+x <- rnorm(n=10)
+f1 <- gl(2,5) # two groups, five in each, represents gender
+f2 <- gl(5,2) # five groups, 2 in each, represents race
+
+# use interaction() to create the 2x5=10 combinations
+interaction(f1, f2)
+
+# split will automatically do the interaction for us if we pass in a list
+# note that some are empty since the combination doesn't exist
+# interesting to use str() here - makes it print out nicely
+str(split(x, list(f1, f2)))
+
+# drop the empty ones
+str(split(x, list(f1, f2), drop = TRUE))
 
 ```
 
