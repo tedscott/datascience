@@ -1,0 +1,61 @@
+---
+title: "Rprog Quiz 3"
+author: "tedscott"
+date: "December 26, 2015"
+output: html_document
+---
+
+R programming quiz 3
+
+```{r}
+# question 1
+
+library(datasets)
+data(iris)
+
+?iris
+View(iris)
+
+# spit out means of the different species for column Sepal.Length
+s <- split(iris, iris$Species)
+sapply(s, function(x) mean(x[,"Sepal.Length"], na.rm=TRUE))
+
+# question 2
+# this code dump out the column means for the first four cols
+apply(iris[, 1:4], 2, mean)
+
+# question 3
+library(datasets)
+data(mtcars)
+
+?mtcars
+# a fun plot
+coplot(mpg ~ disp | as.factor(cyl), data = mtcars,panel = panel.smooth, rows = 1)
+
+# the average miles per gallon (mpg) by number of cylinders in the car (cyl)?
+tapply(mtcars$mpg, mtcars$cyl, mean)
+#OR
+with(mtcars, tapply(mpg, cyl, mean))
+
+# question 4
+# what is the absolute difference between the average horsepower of 4-cylinder cars and the average horsepower of 8-cylinder cars?
+s <- split(mtcars, mtcars$cyl)
+thing <- sapply(s, function(x) mean(x[,"hp"], na.rm=TRUE))
+abs(thing[3] - thing[1])
+
+
+# question 5
+debug(ls)
+ls()
+undebug(ls)
+
+
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
