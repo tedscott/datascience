@@ -1,0 +1,39 @@
+---
+title: "GetBaltimoreCamera"
+author: "tedscott"
+date: "December 13, 2015"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+getwd()
+# could check for a directory called data with
+# if(!dir.exists("data")){dir.create("data")}
+# if we want the read file to be in a data directory
+fileURL <- "https://data.baltimorecity.gov/api/views/dz54-2aru/rows.csv?accessType=DOWNLOAD"
+download.file(fileURL, destfile="./camera.csv")
+# download.file(fileURL, destfile="./data/camera.csv")
+
+# note if it is an excel file instead of a csv then do
+# library(xslx)
+# cameras <- read.xlsx("filename.xlsx", sheetIndex=1, header=TRUE)
+
+list.files()
+dateDownloaded <- date()
+dateDownloaded
+cameras <- read.csv("./camera.csv")
+# OR can do: read.table("./camera.csv", sep=",", header=TRUE, quote="", na.strings="NA")
+summary(cameras)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+#plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
