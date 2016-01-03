@@ -1,0 +1,55 @@
+---
+title: "Rprog profiling code"
+author: "tedscott"
+date: "December 31, 2015"
+output: html_document
+---
+
+Profiling code to optimize it
+
+```{r}
+# system.time()
+# measures the amount of time an expression takes
+
+# example where elapsed time (wall clock time) > user time (CPU time)
+system.time(readLines("http://www.jhsph.edu"))
+
+# elapsed time < user time
+hilbert <- function(n) {
+  i <- 1:n
+  1/(outer(i-1, i, "+"))
+}
+x <- hilbert(1000)
+system.time(svd(x))
+
+# can time expressions inline
+system.time({
+  n <- 1000
+  r <- numeric(n)
+  for (i in 1:n){
+    x <- rnorm(n)
+    r[i] <- mean(x)
+  }
+  hist(r)
+})
+
+```
+
+The R Profiler: Rprof()
+(do not use system.time() and Rprof() together)
+
+```{r}
+ # use summeryRprof() to look at output
+
+library(datasets)
+Rprof()
+fit <- lm(mpg ~ hp + cyl, data=mtcars)
+Rprof(NULL)
+
+
+
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
