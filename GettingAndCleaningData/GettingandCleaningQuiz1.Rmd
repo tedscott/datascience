@@ -1,0 +1,114 @@
+---
+title: "Getting and Cleaning Quiz 1"
+author: "tedscott"
+date: "January 8, 2016"
+output: html_document
+---
+
+Quiz 1
+
+Question 1 - Idaho property values
+How many properties are worth $1,000,000 or more?
+
+```{r}
+fileURL <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv"
+download.file(fileURL, destfile="./IdahoHousing.csv")
+
+idahoHousing <- read.csv("IdahoHousing.csv")
+table(idahoHousing$VAL)
+
+```
+
+Question 2 - no code, FES has more than one variable in the column
+
+Question 3 - working with XLSX for Nat Gas
+Read rows 18-23 and columns 7-15 into R and assign the result to a variable called dat
+What is the value of sum(dat$Zip*dat$Ext,na.rm=T)
+
+```{r}
+fileURL <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FDATA.gov_NGAP.xlsx"
+download.file(fileURL, destfile="./getdata-data-DATA.gov_NGAP.xlsx",method="curl")
+library(xlsx)
+NAGP <- read.xlsx("./getdata-data-DATA.gov_NGAP.xlsx", sheetIndex = 1, header=TRUE)
+head(NAGP)
+
+# can read specific rows and columns
+colIndex <- 7:15
+rowIndex <- 18:23
+dat <- read.xlsx("./getdata-data-DATA.gov_NGAP.xlsx", sheetIndex = 1, 
+                              colIndex=colIndex, rowIndex = rowIndex)
+sum(dat$Zip*dat$Ext,na.rm=T)
+
+```
+
+Question 4
+Read the XML data on Baltimore restaurants from here:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Frestaurants.xml
+
+How many restaurants have zipcode 21231?
+
+```{r}
+library(XML)
+fileURL <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Frestaurants.xml"
+# above doesn't work due to https
+# read file in with chrome and saved it locally
+filename <- "./restaurants.xml"
+doc <- xmlTreeParse(filename, useInternal=T)
+rootNode <- xmlRoot(doc)
+xmlName(rootNode)
+names(rootNode)
+#rootNode[[1]]
+# get all the zipcodes
+zipcodes <- xpathSApply(rootNode, "//zipcode",xmlValue)
+table(zipcodes)
+
+```
+
+Question 5
+
+The American Community Survey distributes downloadable data about United States communities. Download the 2006 microdata survey about housing for the state of Idaho using download.file() from here:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv
+
+using the fread() command load the data into an R object called: DT
+The following are ways to calculate the average value of the variable: pwgtp15
+broken down by sex. Using the data.table package, which will deliver the fastest user time?
+
+DT[,mean(pwgtp15),by=SEX]
+
+sapply(split(DT$pwgtp15,DT$SEX),mean)
+
+mean(DT$pwgtp15,by=DT$SEX)
+
+tapply(DT$pwgtp15,DT$SEX,mean)
+
+rowMeans(DT)[DT$SEX==1]; rowMeans(DT)[DT$SEX==2]
+
+mean(DT[DT$SEX==1,]$pwgtp15); mean(DT[DT$SEX==2,]$pwgtp15)
+
+```{r}
+library(data.table)
+
+
+# already have the csv
+filename <- "acs.csv"
+DT <- fread(filename)
+
+system.time(DT[,mean(pwgtp15),by=SEX])
+
+# single runs don' yield much info, so using replicate to get avgs
+system.time(replicate(500,{DT[,mean(pwgtp15),by=SEX]}))
+system.time(replicate(500,{sapply(split(DT$pwgtp15,DT$SEX),mean)}))
+system.time(replicate(500,{mean(DT$pwgtp15,by=DT$SEX)}))
+system.time(replicate(500,{tapply(DT$pwgtp15,DT$SEX,mean)}))
+system.time(replicate(500,{rowMeans(DT)[DT$SEX==1]}))
+system.time(replicate(500,{mean(DT[DT$SEX==1,]$pwgtp15)}))
+
+
+```
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

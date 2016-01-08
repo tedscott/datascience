@@ -111,5 +111,139 @@ teams
 
 ```
 
+Reading/Writing JSON
+
+```{r}
+# using jsonlite package to look at jtleek github repo
+library(jsonlite)
+jsonData <- fromJSON("https://api.github.com/users/jtleek/repos")
+names(jsonData)
+
+# look into owner objects, owner is an array, so we can work with it like a DF
+names(jsonData$owner)
+
+# since it is an array, can go deeper into the DF
+jsonData$owner$login
+
+##
+# writing JSON
+myjson <- toJSON(iris, pretty=T)
+cat(myjson)
+
+# or work with it and turn it into a DF
+iris2 <- fromJSON(myjson)
+head(iris2)
+
+# check out r-bloggers post about jsonlite for more info
+
+```
+
+Notes about Data Tables
+
+```{r}
+library(data.table)
+
+# https://www.datacamp.com/courses/data-analysis-the-data-table-way
+
+#compare DF and data table
+DF <- data.frame(x=rnorm(9), y=rep(c("a","b","c"),each=3),z=rnorm(9))
+head(DF,3)
+
+DT = data.table(x=rnorm(9), y=rep(c("a","b","c"),each=3),z=rnorm(9))
+head(DT,3)
+
+# view all tables in memory
+tables()
+
+# subsetting is very similar
+DT[2,]
+
+DT[DT$y=="a",]
+
+# subsetting rows a bit different
+# get 2nd and 3rd rows
+DT[c(2,3)]
+
+# subsetting columns is quite different
+# this doesn't work like a DF
+# try to get 2nd and 3rd column
+DT[,c(2,3)]
+
+# it turns out that any argument you pass after a comma is an expression
+# that you want to apply to the DT
+# for example this will spit out the mean of the x values and the sum of the # z values
+# we passed in a list of the functions we want to apply
+# note we don't need to say "x" or "z" it just recognizes them
+DT[,list(mean(x),sum(z))]
+
+# add a new column w that has the z^2 values in it
+DT[,w:=z^2]
+
+#table of the y values
+DT[,table(y)]
+
+# note that DT2 <- DT doesn't make a copy so operations on DT will affect DT2
+# e.g. changing column y in DT will also change DT2
+DT2 <- DT
+DT[, y:= 2]
+
+# both of them will have y=2
+head(DT, n=3)
+head(DT2, n=3)
+
+# if you really want a copy you use the copy function
+
+#multiple operations
+DT[,m:= {tmp <- (x+z); log2(tmp+5)}]
+
+# plyr like operations too
+# add variable a which is true when x>0, false otherwise
+DT[,a:=x>0]
+
+# mean of x+w grouped by variable a
+DT[,b:=mean(x+w),by=a]
+
+# special variables
+set.seed(123)
+DT <- data.table(x=sample(letters[1:3],1E5,TRUE))
+
+# .N does a count, in this case, grouped by the letters in x
+DT[, .N, by=x]
+
+# keys can speed things up for subsetting and grouping
+DT <- data.table(x=rep(c("a","b","c"),each=100, y=rnorm(100)))
+setkey(DT, x)
+DT['a']
+
+# can use keys for joins
+DT1 <- data.table(x=c('a','a','b','dt1'),y=1:4)
+DT2 <- data.table(x=c('a','b','dt2'),z=5:7)
+setkey(DT1,x); setkey(DT2,x)
+merge(DT1,DT2)
+
+
+# reading from disk can be faster
+big_df <- data.frame(x=rnorm(1E6), y=rnnorm(1E6))
+
+# create a temporary file
+file <- tempfile()
+
+# write it out
+write.table(big_df, file=file, row.names = FALSE, col.names = TRUE, sep="\t", quote=F)
+# how long to read it in with fread()?
+# which can be applied to data tables
+system.time(fread(file))
+
+# what about read.table (reading as a DF)
+system.time(read.table(file, header=T, sep="\t"))
+
+# check out
+# http://stackoverflow.com/questions/13618488/what-you-can-do-with-data-frame-that-you-cant-in-data-table
+
+```
+
+
+
+
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
