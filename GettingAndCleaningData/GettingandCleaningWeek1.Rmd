@@ -1,0 +1,115 @@
+---
+title: "GettingCleaningWeek1"
+author: "tedscott"
+date: "January 6, 2016"
+output: html_document
+---
+
+Week 1 - Getting & Cleaning Data
+
+```{r}
+# checking if a directory exists and if not, create it
+if (!file.exists("data")) {
+  dir.create("data")
+}
+
+
+```
+
+Reading Files
+
+```{r}
+getwd()
+# could check for a directory called data with
+# if(!dir.exists("data")){dir.create("data")}
+# if we want the read file to be in a data directory
+fileURL <- "https://data.baltimorecity.gov/api/views/dz54-2aru/rows.csv?accessType=DOWNLOAD"
+download.file(fileURL, destfile="./camera.csv") # add method = "curl"" on a Mac since it is https
+# download.file(fileURL, destfile="./data/camera.csv")
+
+# note if it is an excel file instead of a csv then do
+# library(xslx)
+# cameras <- read.xlsx("filename.xlsx", sheetIndex=1, header=TRUE)
+
+list.files()
+dateDownloaded <- date()
+dateDownloaded
+cameras <- read.csv("./camera.csv")
+# OR can do: read.table("./camera.csv", sep=",", header=TRUE, quote="", na.strings="NA")
+summary(cameras)
+```
+
+Using read.table()
+
+```{r}
+# use top 50 rows to determine classes of columns, then call read.table using those classes
+# to improve the speed of file reading
+initial <- read.table("input.txt",nrows=50)
+classes <- sapply(initial,class)
+fullDF <- read.table("input.txt",colClasses = classes)
+
+# other helpful parameters are quote, na.strings, nrows and skip
+# esp if there are quotes in any values, setting quote="" will fix it
+```
+
+Reading excel files
+```{r}
+fileURL <- "https://data.baltimorecity.gov/api/views/dz54-2aru/rows.xlsx?accessType=DOWNLOAD"
+download.file(fileURL, destfile="./camera.xlsx",method="curl")
+dateDownloaded <- date()
+
+library(xlsx)
+cameraData <- read.xlsx("./camera.xlsx", sheetIndex = 1, header=TRUE)
+head(cameraData)
+
+# can read specific rows and columns
+colIndex <- 2:3
+rowIndex <- 1:4
+cameraDataSubset <- read.xlsx("./camera.xlsx", sheetIndex = 1, 
+                              colIndex=colIndex, rowIndex = rowIndex)
+cameraDataSubset
+
+
+```
+
+Reading XML
+
+```{r}
+library(XML)
+fileURL <- "http://www.w3schools.com/xml/simple.xml"
+doc <- xmlTreeParse(fileURL, useInternal=T)
+rootNode <- xmlRoot(doc)
+xmlName(rootNode)
+names(rootNode)
+
+# access an element like a list
+rootNode[[1]]
+
+# first element of that element
+rootNode[[1]][[1]]
+
+# programmatically extract elements with xmlSApply
+xmlSApply(rootNode, xmlValue)
+
+# use XPath to get items on the menu
+xpathSApply(rootNode, "//name",xmlValue)
+
+# prices
+xpathSApply(rootNode,"//price",xmlValue)
+
+##
+## reading from ESPN page for Baltimore Ravens
+## view source on the page in the browser to find the tags and attributes
+fileURL <- "http://espn.go.com/nfl/team/_/name/bal/baltimore-ravens"
+doc <- htmlTreeParse(fileURL, useInternal=T)
+scores <- xpathSApply(doc,"//li[@class='score']",xmlValue)
+teams <- xpathSApply(doc,"//li[@class='team-name']",xmlValue)
+scores
+teams
+
+
+
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
