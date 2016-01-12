@@ -10,6 +10,9 @@ Using Web APIs
 Twitter
 
 ```{r}
+# the below uses library(httr) so don't forget to load it if you haven't
+# httr works with Facebook, Google, Twitter, GitHub, etc
+
 # went to dev.twitter.com/apps and made an app to get auth tokens
 # https://apps.twitter.com/app/9264166 is my app
 library(base64enc)
@@ -30,7 +33,7 @@ library(jsonlite)
 json1=content(homeTL)
 
 # use jsonlite's fromJSON to extract contents
-# of first tweet on my timeline
+# of first tweet on my timeline and stuff it in a DF
 json2=jsonlite::fromJSON(toJSON(json1))
 json2[1,1:4]
 ```

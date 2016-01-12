@@ -26,8 +26,8 @@ html <- htmlTreeParse(url, useInternalNodes = TRUE)
 xpathSApply(html, "//title", xmlValue)
 
 # cited by column?
-xpathSApply(html, "//td[@id='col-citedby']", xmlValue)
-
+foo <- xpathSApply(html, "//td[@id='col-citedby']", xmlValue)
+foo
 
 # use the httr package
 install.packages("httr")
