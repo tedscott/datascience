@@ -1,0 +1,313 @@
+---
+title: "Getting & Cleaning Week 3"
+author: "tedscott"
+date: "January 13, 2016"
+output: html_document
+---
+
+Subsetting
+
+```{r}
+# build a quick DF
+set.seed(13435)
+X <- data.frame("var1"=sample(1:5),"var2"=sample(6:10),"var3"=sample(11:15))
+
+# mix up the rows a bit and set some NAs
+X <- X[sample(1:5),]; X$var2[c(1,3)]=NA
+X
+
+# some subsets
+# first column
+X[ ,1]
+
+# a column by name
+X[,"var1"]
+
+# first two rows of a column by name
+X[1:2,"var2"]
+
+# subsetting with logicals
+X[(X$var1 <= 3 & X$var3 > 11), ]
+
+X[(X$var1 <= 3 | X$var3 > 15), ]
+
+# subsetting with which() to help remove NAs
+X[which(X$var2 > 8), ]
+
+##
+# Sorting
+##
+sort(X$var1)
+sort(X$var1, decreasing=TRUE)
+sort(X$var2, na.last = TRUE)
+
+# ordering - reorder the DF based on a specific row
+X[order(X$var1), ]
+
+# can order by multiple columns - first var1 then var3
+X[order(X$var1, X$var3), ]
+
+```
+
+Ordering with plyr
+
+```{r}
+
+install.packages("plyr")
+library(plyr)
+
+# sort by var1
+arrange(X, var1)
+arrange(X, desc(var1))
+
+# unload plyr
+detach("package:plyr", unload = TRUE)
+```
+
+Adding rows and columns
+
+```{r}
+X$var4 <- rnorm(5)
+X
+
+# could also use cbind()
+Y <- cbind(X, rnorm(5))
+Y
+
+# rbind() for row binding
+
+```
+
+Summarizing Data
+
+```{r}
+# get some data from the web
+# Baltimore restaurants
+# make a data directory
+if(!file.exists("./data")){dir.create("./data")}
+fileUrl <- "https://data.baltimorecity.gov/api/views/k5ry-ef3g/rows.csv?accessType=DOWNLOAD"
+download.file(fileUrl, destfile="./data/restaurants.csv")
+restdata <- read.csv("./data/restaurants.csv")
+
+# look at it
+head(restdata, n=3)
+tail(restdata, n=3)
+summary(restdata)
+str(restdata)
+
+# look at standard quantiles
+quantile(restdata$councilDistrict, na.rm=T)
+
+# specific quantiles
+quantile(restdata$councilDistrict, probs=c(0.5, 0.7, 0.9))
+
+# table of zip codes - useNA="ifany" means if there are any give me a count of them
+table(restdata$zipCode, useNA = "ifany")
+
+# 2-D table
+table(restdata$councilDistrict, restdata$zipCode)
+
+# check fo NA values
+sum(is.na(restdata$councilDistrict)) # 0 since there are none
+any(is.na(restdata$councilDistrict)) # false since there are none
+all(restdata$zipCode > 0) # false since there is a negative value in there
+
+
+# row and column sums to check for NAs
+colSums(is.na(restdata)) # get all 0's
+all(colSums(is.na(restdata))==0) # get TRUE since there are none
+
+# are there any zipcodes == 21212?
+table(restdata$zipCode %in% c("21212"))
+
+# are there any in 21212 OR 21213?
+table(restdata$zipCode %in% c("21212","21213"))
+
+# subset to only those zipcodes
+restdata[restdata$zipCode %in% c("21212","21213"), ]
+
+
+```
+
+Cross tabulations
+
+```{r}
+# load UC Berkeley admissions built in data set
+data("UCBAdmissions")
+DF = as.data.frame(UCBAdmissions)
+summary(DF)
+
+# show a table of the frequency by gender and admission
+xt <- xtabs(Freq ~ Gender + Admit, data=DF)
+xt
+
+# flat tables
+# get a bumch of 2-d tables due to the replicates
+warpbreaks$replicate <- rep(1:9, len=54)
+xt <- xtabs(breaks ~., data=warpbreaks)
+xt
+
+# so, instead, flatten it
+ftable(xt)
+
+```
+
+Size of a data set
+
+```{r}
+
+fakedata <- rnorm(1e5)
+object.size(fakedata)
+
+print(object.size(fakedata), units="Mb")
+
+```
+
+Creating new variables
+
+```{r}
+
+# using restdata some more, already loaded above
+
+# creating sequences for indexing
+# 1-10, but every 2nd value
+s1 <- seq(1,10,by=2); s1
+
+# along 1-10, give me 3 values, evenly spaced
+s2 <- seq(1,10,length=3); s2
+
+# given a vector, index it
+x <- c(1,3,8,25,100); seq(along=x)
+
+# create new column nearme 
+restdata$nearme <- restdata$neighborhood %in% c("Roland park", "Homeland")
+table(restdata$nearme)
+
+# create binary variables
+restdata$zipwrong <- ifelse(restdata$zipCode < 0, TRUE, FALSE)
+table(restdata$zipwrong, restdata$zipCode < 0)
+
+# create categorical variables
+# in this case, based on the quantiles of the zipcodes
+restdata$zipgroups <- cut(restdata$zipCode, breaks = quantile(restdata$zipCode))
+table(restdata$zipgroups)
+
+# how many from each zip are in each group?
+table(restdata$zipgroups,restdata$zipCode)
+
+# easier cutting with Hmisc package
+install.packages("Hmisc")
+library(Hmisc)
+
+# cut it into 4 groups, default by quantiles
+# the resulting cuts are factor variables
+restdata$zipgroups <- cut2(restdata$zipCode, g=4)
+table(restdata$zipgroups)
+
+# create factor variables
+# zip codes don't really change with the integer increment of 1, so make a
+# new column with the zipcode as a factor
+restdata$zcf <- factor(restdata$zipCode)
+restdata$zcf[1:10]
+class(restdata$zcf)
+
+# create a vector of factors
+yesno <- sample(c("yes","no"), size=10, replace=TRUE)
+yesnofac <- factor(yesno, levels=c("yes","no"))
+
+# set "yes" as the reference level
+relevel(yesnofac, ref="yes")
+
+# to unfactorize and make them numeric
+as.numeric(yesnofac)
+
+# can also use mutate() to create new variables
+# also make a new DF here
+library(dplyr)
+restdata2 <- mutate(restdata, zipgroups=cut2(zipCode, g=4))
+table(restdata2$zipgroups)
+
+# other common transforms for quantitative data
+x <- 3.475
+abs(x) # absolute value
+sqrt(x)
+ceiling(x) # ceiling of 3.475 is 4
+floor(x) # floor is 3
+round(x, digits=2) # rounding to two places is 3.48
+signif(x, digits=2) # 2 significant digits is 3.5
+cos(x); sin(x); tan(x)
+log(x) # natural log, so ln of x
+log2(x) # base 2
+log10(x) # base 10
+exp(x) # e to the x
+
+# see http://statmethods.net/management/functions.html
+# Andrew Jaffe's R notes: 
+# http://biostat.jhsph.edu/~ajaffe/lec_winterR/Lecture%202.pdf
+
+```
+
+Reshaping Data
+
+```{r}
+# goal is tidy data
+library(reshape2)
+head(mtcars)
+
+# melting data frames (wide to long)
+# create row names columns
+mtcars$carname <- rownames(mtcars)
+
+# melt it such that there is one row for every mpg and hp (the measured variables)
+# with the id columns
+carMelt <- melt(mtcars, id=c("carname","gear","cyl"),measure.vars = c("mpg","hp"))
+head(carMelt,n=3)
+tail(carMelt, n=3)
+
+# now we can recast the data frame
+# give us a data frame with rows as cyl, and cols as the variables in carMelt(mpg, hp)
+# default out of dcast() is to do the length or count for each variable
+cylData <- dcast(carMelt, cyl~variable)
+cylData
+
+# if we want the mean, we pass in the func to dcast
+cylData <- dcast(carMelt, cyl~variable, mean)
+cylData
+
+# averaging values with tapply
+head(InsectSprays)
+
+# give me the total number of sprays for each class (A - F)
+# so, apply the sum along the index for count by spray
+tapply(InsectSprays$count, InsectSprays$spray, sum)
+
+# or we can split - apply - combine
+## split
+spIns <- split(InsectSprays$count, InsectSprays$spray)
+spIns
+
+## apply
+# now we have a list of individual lists by spray
+# can lapply to those lists, which returns a list
+sprCount <- lapply(spIns, sum)
+sprCount
+
+## combine (unlist)
+unlist(sprCount)
+
+# we could have used sapply to get the nice output after splitting too
+sapply(spIns, sum)
+
+# could have used plyr package
+ddply(InsectSprays, .(spray),summarize,sum=sum(count))
+
+# create a new variable so we can subtract total count from individual counts
+# or the mean, etc
+spraySums <- ddply(InsectSprays, .(spray),summarize, sum=ave(count, FUN=sum))
+dim(spraySums)
+head(spraySums)
+
+
+
+```
+
