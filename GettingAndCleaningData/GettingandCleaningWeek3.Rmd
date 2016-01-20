@@ -307,6 +307,135 @@ spraySums <- ddply(InsectSprays, .(spray),summarize, sum=ave(count, FUN=sum))
 dim(spraySums)
 head(spraySums)
 
+```
+
+Using dplyr
+(select, filter, arrange, rename, mutate, group_by, summarise)
+
+```{r}
+library(dplyr)
+
+# grab the chicago weather data from github
+# looks like pollution info?
+fileURL="https://github.com/DataScienceSpecialization/courses/blob/master/03_GettingData/dplyr/chicago.rds"
+download.file(fileURL, "./data/chicago.rds")
+# actually the file above doesn't work, so I used the version from 
+# http://www.biostat.jhsph.edu/~rpeng/leanpub/rprog/chicago_data.zip
+chicago <- readRDS("./data/chicago.rds")
+dim(chicago)
+str(chicago)
+summary(chicago)
+names(chicago)
+
+# using select we can get a subset of the columns by name
+head(select(chicago, city:dptp))
+
+# or all columns except the ones with a -
+head(select(chicago, -(city:dptp)))
+
+# note, to do those same with base R
+# pull out the indicies
+i <- match("city", names(chicago))
+j <- match("dptp", names(chicago))
+head(chicago[, -(i:j)])
+
+# filter - subset rows based on conditions
+# all rows where pm25tmean2 > 30
+chic.f <- filter(chicago, pm25tmean2 > 30)
+head(chic.f)
+
+# can of course add multiple conditions
+chic.f <- filter(chicago, pm25tmean2 > 30 & tmpd > 80)
+head(chic.f)
+
+# arrange - reorder the rows
+# e.g. by date
+chicago <- arrange(chicago, date)
+head(chicago)
+tail(chicago)
+chicago <- arrange(chicago, desc(date)) # for descending order
+
+# rename - to rename variables
+# rename dptp and pm25mean2
+chicago <- rename(chicago, pm25=pm25tmean2, dewpoint=dptp)
+
+# mutate - create or transform variables
+chicago <- mutate(chicago, pm25detrend=pm25-mean(pm25, na.rm=TRUE))
+head(chicago)
+
+# group_by - to collect based on variables
+# create variable to indicate whether a day was hot or cold
+# depending on temp (tmpd)
+chicago <- mutate(chicago, tempcat=factor(1 * (tmpd > 80), labels=c("cold","hot")))
+head(chicago)
+hotcold <- group_by(chicago, tempcat)
+head(hotcold)
+
+# now we can summarise based on the grouping
+summarise(hotcold, pm25=mean(pm25, na.rm=T), o3=max(o3tmean2), no2=median(no2tmean2))
+
+# what if we want summaries by year?
+# create a year variable
+chicago <- mutate(chicago, year = as.POSIXlt(date)$year + 1900)
+years <- group_by(chicago, year)
+summarise(years, pm25 = mean(pm25, na.rm=T), o3=max(o3tmean2), no2=median(no2tmean2))
+
+# chaining or piping with %>%
+# create a month variable and use it
+# note that in the month extraction from the POSIXlt we have to add 1 to 
+# restore December from 11 to 12 (not sure why this happens, but it does)
+# maybe POSIX dates are 0-based?
+chicago %>% mutate(month = as.POSIXlt(date)$mon + 1) %>% 
+  group_by(month) %>% 
+  summarise(pm25 = mean(pm25, na.rm=T), o3=max(o3tmean2), no2=median(no2tmean2))
+
+
+```
+
+Merging Data
+
+Peer review project
+
+```{r}
+# should use the github site instead:
+# https://github.com/DataScienceSpecialization/courses/tree/master/03_GettingData/03_05_mergingData/data
+#fileURL1 <- "https://dl.dropboxusercontent.com/u/7710864/data/reviews-apr-29.csv"
+#fileURL2 <- "https://dl.dropboxusercontent.com/u/7710864/data/solutions-apr-29.csv"
+download.file(fileURL1, destfile="./data/reviews.csv")
+download.file(fileURL2, destfile="./data/solutions.csv")
+reviews <- read.csv("./data/reviews.csv")
+solutions <- read.csv("./data/solutions.csv")
+head(reviews, 5)
+
+# in order to merge them we need a key or more than one
+# merge() has parameters like x, y, by, by.x, by.y, all
+# check out the field names
+names(reviews)
+names(solutions)
+
+# solution_id in reviews and id in solutions are the key
+# if we don't tell it what to merge on it would try and match by exact name
+mergedData <- merge(reviews, solutions, by.x="solution_id", by.y="id", all=TRUE)
+head(mergedData)
+
+# what are the common columns?
+intersect(names(solutions), names(reviews))
+
+# we could use those (but might be wrong)
+# note NAs for ones that were not in both data sets
+mergedData2 <- merge(reviews, solutions, all=TRUE)
+head(mergedData2)
+
+# there is also a join() in plyr, which joins by id, but the id must be common
+df1 <- data.frame(id=smaple(1:10), x=rnorm(10))
+df2 <- data.frame(id=sample(1:10), y=rnorm(10))
+newDF <- join(df1, df2, id)
+
+# better for joining multiple DFs, tho
+df3 <- data.frame(id=sample(1:10), z=rnorm(10))
+dflist <- list(df1, df2, df3)
+join_all(dflist)
+
 
 
 ```
