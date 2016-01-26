@@ -429,7 +429,9 @@ head(mergedData2)
 # there is also a join() in plyr, which joins by id, but the id must be common
 df1 <- data.frame(id=smaple(1:10), x=rnorm(10))
 df2 <- data.frame(id=sample(1:10), y=rnorm(10))
-newDF <- join(df1, df2, id)
+newDF <- join(df1, df2)
+#sort by the id
+arrange(join(df1,df2),id)
 
 # better for joining multiple DFs, tho
 df3 <- data.frame(id=sample(1:10), z=rnorm(10))
@@ -437,6 +439,26 @@ dflist <- list(df1, df2, df3)
 join_all(dflist)
 
 
+
+```
+
+Swirl Exercise Note
+
+```{r}
+
+# for dplyr, it is a good idea to turn your DFs into tbl_df
+# you get the prettier printing
+df1_tbl <- tbl_df(df1)
+
+```
+
+
+
+Clearing the workspace!
+
+```{r}
+ls()
+rm(list=ls())
 
 ```
 

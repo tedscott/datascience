@@ -1,0 +1,146 @@
+---
+title: "Getting & Cleaning Quiz 4"
+author: "tedscott"
+date: "January 24, 2016"
+output: html_document
+---
+
+Q1: The American Community Survey distributes downloadable data about United States communities. Download the 2006 microdata survey about housing for the state of Idaho using download.file() from here:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv
+
+and load the data into R. The code book, describing the variable names is here:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FPUMSDataDict06.pdf
+
+Apply strsplit() to split all the names of the data frame on the characters "wgtp". What is the value of the 123 element of the resulting list?
+
+```{r}
+
+idaho <- read.csv("./data/IdahoHousing2006.csv", stringsAsFactors = FALSE)
+foo <- names(idaho)
+foo2 <- strsplit(foo, "wgtp")
+foo2[[123]]
+# "" "15"
+
+```
+
+Q2: Load the Gross Domestic Product data for the 190 ranked countries in this data set:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv
+
+Remove the commas from the GDP numbers in millions of dollars and average them. What is the average?
+
+Original data sources:
+
+http://data.worldbank.org/data-catalog/GDP-ranking-table
+
+
+```{r}
+GDP <- read.csv("./data/GDP-ranking-table.csv", stringsAsFactors = FALSE)
+View(GDP)
+# column we want is X.3
+GDP <- GDP %>% mutate(X.3=gsub(",","",X.3))
+mean(as.numeric(GDP$X.3[5:194]),na.rm=T)
+
+# 377652.4
+
+```
+
+Q3: In the data set from Question 2 what is a regular expression that would allow you to count the number of countries whose name begins with "United"? Assume that the variable with the country names in it is named countryNames. How many countries begin with United?
+
+```{r}
+
+GDP <- rename(GDP, countryName=X.2)
+length(grep("^United",GDP$countryName))
+
+
+```
+ Q4: Load the Gross Domestic Product data for the 190 ranked countries in this data set:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv
+
+Load the educational data from this data set:
+
+https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv
+
+Match the data based on the country shortcode. Of the countries for which the end of the fiscal year is available, how many end in June?
+
+Original data sources:
+
+http://data.worldbank.org/data-catalog/GDP-ranking-table
+
+http://data.worldbank.org/data-catalog/ed-stats
+ 
+ 
+```{r}
+
+# already have GDP loaded, but I messed with it, so reloading
+GDP <- read.csv("./data/GDP-ranking-table.csv", stringsAsFactors = FALSE)
+ED <- read.csv("./data/ed-stats.csv", stringsAsFactors = FALSE)
+names(GDP)
+names(ED)
+head(GDP,5)
+tail(GDP,5)
+head(ED)
+
+# the GDP data is in rows 5 - 194, column X is CountryCode, Gross.domestic.product.2012 is
+# the ranking and X.2 is the country name, X.3 is the GDP in millions $
+# so it is time to subset it
+GDPsub <- GDP[5:194,c("X","Gross.domestic.product.2012","X.2","X.3")]
+names(GDPsub) <- c("CountryCode","GDPRank","CountryName","GDP_millions")
+
+# merge based on CountryCode in GDP and CountryCode in ED
+mergedData <- merge(x = GDPsub, y=ED, by.x = "CountryCode", by.y = "CountryCode", all=TRUE)
+mergedDF <- tbl_df(mergedData)
+names(mergedDF)
+
+# the Special.Notes column contains "Fiscal year end:"
+fiscalKnown <- grep("^Fiscal year end: June",mergedDF$Special.Notes, value=T)
+length(fiscalKnown)
+# 13
+
+```
+
+Q5: You can use the quantmod (http://www.quantmod.com/) package to get historical stock prices for publicly traded companies on the NASDAQ and NYSE. Use the following code to download data on Amazon's stock price and get the times the data was sampled.
+
+library(quantmod)
+amzn = getSymbols("AMZN",auto.assign=FALSE)
+sampleTimes = index(amzn)
+How many values were collected in 2012? How many values were collected on Mondays in 2012?
+
+```{r}
+install.packages("quantmod")
+library(quantmod)
+amzn = getSymbols("AMZN",auto.assign=FALSE)
+
+# row index values are the dates
+sampleTimes = index(amzn)
+max(sampleTimes) # wow it is up to the end of last week!
+
+# count 2012 entries
+in2012 <- grep("^2012",sampleTimes)
+length(in2012)
+# 250
+
+# filter to only 2012
+in2012dates <- sampleTimes[in2012]
+
+# get just the day of the week
+in2012days <- format(in2012dates, "%A")
+
+# count how many are Monday
+length(grep("^Mon",in2012days))
+
+
+# 47
+
+# total answer is 250, 47
+
+
+
+```
+
+
+
+
