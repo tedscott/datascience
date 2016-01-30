@@ -69,6 +69,8 @@ This repo includes the following files:
 
 - 'test/y_test.txt': Test labels
 
+- 'old_docs/README.txt': the original project README
+
 The following files are available for the train and test data. Their descriptions are equivalent. 
 
 - 'train/subject_train.txt': Each row identifies the subject who performed the activity for each window sample. Its range is from 1 to 30. 
