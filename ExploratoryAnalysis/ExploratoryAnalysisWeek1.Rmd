@@ -1,0 +1,71 @@
+---
+title: "Exploratory Analysis Week 1"
+author: "tedscott"
+date: "February 3, 2016"
+output: html_document
+---
+
+Week 1
+
+Base graphics in R
+
+```{r}
+# pretend to load in data file
+# it is probably here somewhere: https://github.com/DataScienceSpecialization/courses/tree/master/04_ExploratoryAnalysis
+fileURL <- "https://github.com/DataScienceSpecialization/courses/blob/master/04_ExploratoryAnalysis/exploratoryGraphs/data/avgpm25.csv"
+download.file(fileURL, destfile="./avgpm25.csv")
+df <- read.csv("./avgpm25.csv") #, colClasses = c("numeric", "numeric","numeric","character"))
+
+# basic data summary
+summary(df$pm25)
+
+# boxplot of one variable
+boxplot(df$pm25, col="blue")
+abline(h=12) # create a horizontal line at 12 on y axis
+
+# histogram
+hist(df$pm25, col="green", breaks=100)
+rug(df$pm25) # shows all the data points that are in the histogram underneath it
+abline(v=12, lwd=2)
+abline(v=median(df$pm25), col="magenta", lwd=4)
+
+# barplot
+barplot(table(df$region), col="wheat", main="Number of counties in each region")
+
+
+```
+
+More than 1 dimension
+
+```{r}
+# boxplot
+boxplot(pm25 ~ region, data=df, col="red")
+
+# histograms
+
+# stack them
+par(mfrow=c(2,1), mar=c(4,4,2,1))
+hist(subset(df, region=="east")$pm25, col="green")
+hist(subset(df, region=="west")$pm25, col="green")
+
+par(mfrow=c(1,1))
+
+# scatterplot with dashed line
+# more pollution at middle latitudes
+with(df, plot(latitude, pm25))
+abline(h=12, lwd=2, lty=2)
+
+# add color for region
+with(df, plot(latitude, pm25, col=region))
+abline(h=12, lwd=2, lty=2)
+
+# side by side
+# in both east and west, there's more pollution in the middle latitudes
+par(mfrow=c(2,1), mar=c(5,4,2,1))
+with(subset(df, region=="west"), plot(latitude, pm25, main="west"))
+with(subset(df, region=="east"), plot(latitude, pm25, main="east"))
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
