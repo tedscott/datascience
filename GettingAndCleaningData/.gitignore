@@ -7,8 +7,12 @@
 # Session Data files
 .RData
 
-# csv
+# csv and others
 *.csv
+*.for
+*.h5
+*.xlsx
+*.rds
 
 # data directory
 ./data/*.*
