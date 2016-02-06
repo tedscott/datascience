@@ -65,7 +65,44 @@ par(mfrow=c(2,1), mar=c(5,4,2,1))
 with(subset(df, region=="west"), plot(latitude, pm25, main="west"))
 with(subset(df, region=="east"), plot(latitude, pm25, main="east"))
 
+par(mfrow=c(1,1))
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Base Plotting system
+
+```{r}
+
+# basic scatter plot using cars data set
+# distance to stop at a given speed
+library(datasets)
+data(cars)
+with(cars, plot(speed, dist))
+
+```
+
+Lattice system
+
+plots are created with a single function call (e.g. xyplot)
+good for putting many plots on a screen (faceting)
+
+```{r}
+# plot life expectancy versus income (data from 1960's & 1970's)
+library(lattice)
+state <- data.frame(state.x77, region=state.region)
+xyplot(Life.Exp ~ Income | region, data=state, layout=c(4,1))
+
+
+```
+
+ggplot2 system
+
+```{r}
+# hwy gas mileage versus engine displacement
+library(ggplot2)
+data(mpg)
+qplot(displ, hwy, data=mpg)
+
+```
+
+
